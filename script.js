@@ -1,6 +1,7 @@
 const container = document.querySelector('.gameboard');
-const btn = document.querySelector('button');
+const reset = document.querySelector('#reset');
 const result = document.querySelector('h2');
+let index = 0;
 /// /////////////////
 // PLAYER CREATION //
 /// /////////////////
@@ -11,7 +12,7 @@ const playerFactory = (name, mark) => {
 
 // let person1 = prompt("Please enter your name", "Harry Potter");
 const player1 = playerFactory('Kozi', 'X');
-const player2 = playerFactory('Opponent', 'O');
+let player2 = playerFactory('Opponent', 'O');
 
 const gameBoard = (() => {
     const board = ['', '', '', '', '', '', '', '', ''];
@@ -65,18 +66,60 @@ const gameBoard = (() => {
     let activePlayer = player1;
     container.addEventListener('click', function (e) {
         if (!checkWin()) {
-            if (e.target.innerText === '') {
-                board[e.path['0'].id] = activePlayer.mark;
-                createBoard();
-                if (activePlayer === player1) {
+            // Game for two players
+            if (index == '0') {
+                if (e.target.innerText === '') {
+                    board[e.path['0'].id] = activePlayer.mark;
+                    createBoard();
+                    if (activePlayer === player1) {
+                        activePlayer = player2;
+                        result.innerText = `${player2.name} move`;
+                    } else {
+                        activePlayer = player1;
+                        result.innerText = `${player1.name} move`;
+                    }
+                }
+            }
+            // Game vs easy computer
+            if (index === '1') {
+                activePlayer = player1;
+                player2 = playerFactory('Computer', 'O');
+                if (e.target.innerText === '') {
+                    board[e.path['0'].id] = activePlayer.mark;
                     activePlayer = player2;
-                    result.innerText = `${player2.name} move`;
-                } else {
+                    if (!checkWin()) {
+                        result.innerText = `Computer move`;
+                        const indexes = Array.from(Array(board.length).keys());
+                        const availableIndexes = indexes.filter((indexe) => board[indexe] === '');
+                        const selectedIndex =
+                            availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
+                        board[selectedIndex] = activePlayer.mark;
+                        activePlayer = player1;
+                        result.innerText = `${player1.name} move`;
+                    }
+                    createBoard();
+                }
+            }
+            // Game vs hard computer
+            if (index === '2') {
+                activePlayer = player1;
+                if (e.target.innerText === '') {
+                    board[e.path['0'].id] = activePlayer.mark;
+                    activePlayer = player2;
+                    result.innerText = `Computer move`;
+                    const indexes = Array.from(Array(board.length).keys());
+                    const availableIndexes = indexes.filter((indexe) => board[indexe] === '');
+                    const selectedIndex =
+                        availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
+                    board[selectedIndex] = activePlayer.mark;
                     activePlayer = player1;
                     result.innerText = `${player1.name} move`;
+                    createBoard();
                 }
             }
 
+            //
+            //
             checkWin();
         }
     });
@@ -84,13 +127,49 @@ const gameBoard = (() => {
     /// //////////////////////////////
     /// / //RESETING THE GAME/////////
     /// //////////////////////////////
-
-    btn.addEventListener('click', () => {
+    function startAgain() {
         for (let i = 0; i < board.length; i += 1) {
             board[i] = '';
             result.innerText = 'Start the game';
         }
         createBoard();
-    });
-    return { board, activePlayer, btn };
+    }
+
+    reset.addEventListener('click', startAgain);
+
+    return { board, activePlayer, reset, startAgain };
 })();
+
+const buttons = document.querySelector('#buttons');
+const twoPlayers = document.querySelector('.two');
+const easy = document.querySelector('.easy');
+const hard = document.querySelector('.hard');
+
+buttons.addEventListener('click', function (e) {
+    index = e.composedPath()['0'].dataset.indexNumber;
+    if (index === '0') {
+        twoPlayers.style.backgroundColor = 'black';
+        easy.style.backgroundColor = '#E7473C';
+        hard.style.backgroundColor = '#E7473C';
+    } else if (index === '1') {
+        twoPlayers.style.backgroundColor = '#E7473C';
+        easy.style.backgroundColor = 'black';
+        hard.style.backgroundColor = '#E7473C';
+    } else {
+        twoPlayers.style.backgroundColor = '#E7473C';
+        easy.style.backgroundColor = '#E7473C';
+        hard.style.backgroundColor = 'black';
+    }
+    gameBoard.startAgain();
+});
+
+function gameType() {}
+
+gameType();
+
+function bestMove() {
+    for (let i = 0; i < board.length; i++) {
+        if (board[i] == '') {
+        }
+    }
+}

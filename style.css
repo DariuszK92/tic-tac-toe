@@ -73,3 +73,16 @@ button:hover{
 h2{
   margin-bottom:15px;
 }
+
+#buttons{
+  display: flex;
+  gap: 15px;
+ margin-bottom: 10px;
+}
+#buttons>button{
+  font-size: 16px;
+}
+
+#buttons>button:first-child{
+  background-color: black;
+}
