@@ -42,6 +42,13 @@ const gameBoard = (() => {
             [0, 4, 8],
             [2, 4, 6]
         ];
+        // eslint-disable-next-line no-restricted-syntax
+        let openSpots = 0;
+        for (let i = 0; i < board.length; i += 1) {
+            if (board[i] == '') {
+                openSpots += 1;
+            }
+        }
         for (const comb of combs) {
             if (
                 gameBoard.board[comb[0]] == gameBoard.board[comb[1]] &&
@@ -52,13 +59,18 @@ const gameBoard = (() => {
                 container.childNodes[comb[1]].style.backgroundColor = 'yellow';
                 container.childNodes[comb[2]].style.backgroundColor = 'yellow';
                 if (gameBoard.board[comb[0]] == 'X') {
-                    console.log(`${player1.name} win`);
                     result.innerText = `${player1.name} win!`;
                     return true;
                 }
-                result.innerText = `${player2.name} win!`;
-                return true;
+                if (gameBoard.board[comb[0]] == 'O') {
+                    result.innerText = `${player2.name} win!`;
+                    return true;
+                }
             }
+        }
+        if (openSpots == 0) {
+            result.innerText = `It's a tie!`;
+            return 'tie';
         }
         return false;
     }
@@ -101,19 +113,19 @@ const gameBoard = (() => {
                 }
             }
             // Game vs hard computer
+
             if (index === '2') {
-                activePlayer = player1;
+                player2 = playerFactory('Computer', 'O');
                 if (e.target.innerText === '') {
                     board[e.path['0'].id] = activePlayer.mark;
-                    activePlayer = player2;
                     result.innerText = `Computer move`;
                     const indexes = Array.from(Array(board.length).keys());
                     const availableIndexes = indexes.filter((indexe) => board[indexe] === '');
-                    const selectedIndex =
-                        availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
-                    board[selectedIndex] = activePlayer.mark;
-                    activePlayer = player1;
+                    if (availableIndexes.length > 0) {
+                        bestMove();
+                    }
                     result.innerText = `${player1.name} move`;
+                    checkWin();
                     createBoard();
                 }
             }
@@ -137,7 +149,7 @@ const gameBoard = (() => {
 
     reset.addEventListener('click', startAgain);
 
-    return { board, activePlayer, reset, startAgain };
+    return { board, activePlayer, reset, startAgain, checkWin };
 })();
 
 const buttons = document.querySelector('#buttons');
@@ -167,9 +179,25 @@ function gameType() {}
 
 gameType();
 
+function minimax() {
+    return 1;
+}
+
 function bestMove() {
-    for (let i = 0; i < board.length; i++) {
-        if (board[i] == '') {
+    let bestScore = -Infinity;
+    let move;
+    gameBoard.activePlayer = player2;
+    for (let i = 0; i < 9; i++) {
+        if (gameBoard.board[i] === '') {
+            gameBoard.board[i] = gameBoard.activePlayer.mark;
+            const score = minimax(gameBoard.board);
+            gameBoard.board[i] = '';
+            if (score > bestScore) {
+                bestScore = score;
+                move = { i };
+            }
         }
     }
+    gameBoard.board[move.i] = 'O';
+    gameBoard.activePlayer = player1;
 }
