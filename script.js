@@ -1,6 +1,6 @@
 const container = document.querySelector('.gameboard');
 const reset = document.querySelector('#reset');
-const result = document.querySelector('h2');
+const desc = document.querySelector('h2');
 let index = 0;
 /// /////////////////
 // PLAYER CREATION //
@@ -13,9 +13,16 @@ const playerFactory = (name, mark) => {
 // let person1 = prompt("Please enter your name", "Harry Potter");
 const player1 = playerFactory('Kozi', 'X');
 let player2 = playerFactory('Opponent', 'O');
+// eslint-disable-next-line no-param-reassign, prefer-const
+let scores = {
+    X: 10,
+    O: -10,
+    tie: 0
+};
 
 const gameBoard = (() => {
-    const board = ['', '', '', '', '', '', '', '', ''];
+    // eslint-disable-next-line prefer-const
+    let board = ['', '', '', '', '', '', '', '', ''];
 
     const createBoard = () => {
         while (container.firstChild) {
@@ -59,17 +66,17 @@ const gameBoard = (() => {
                 container.childNodes[comb[1]].style.backgroundColor = 'yellow';
                 container.childNodes[comb[2]].style.backgroundColor = 'yellow';
                 if (gameBoard.board[comb[0]] == 'X') {
-                    result.innerText = `${player1.name} win!`;
-                    return true;
+                    desc.innerText = `${player1.name} win!`;
+                    return 'X';
                 }
                 if (gameBoard.board[comb[0]] == 'O') {
-                    result.innerText = `${player2.name} win!`;
-                    return true;
+                    desc.innerText = `${player2.name} win!`;
+                    return 'O';
                 }
             }
         }
         if (openSpots == 0) {
-            result.innerText = `It's a tie!`;
+            desc.innerText = `It's a tie!`;
             return 'tie';
         }
         return false;
@@ -85,10 +92,10 @@ const gameBoard = (() => {
                     createBoard();
                     if (activePlayer === player1) {
                         activePlayer = player2;
-                        result.innerText = `${player2.name} move`;
+                        desc.innerText = `${player2.name} move`;
                     } else {
                         activePlayer = player1;
-                        result.innerText = `${player1.name} move`;
+                        desc.innerText = `${player1.name} move`;
                     }
                 }
             }
@@ -100,31 +107,94 @@ const gameBoard = (() => {
                     board[e.path['0'].id] = activePlayer.mark;
                     activePlayer = player2;
                     if (!checkWin()) {
-                        result.innerText = `Computer move`;
+                        desc.innerText = `Computer move`;
                         const indexes = Array.from(Array(board.length).keys());
                         const availableIndexes = indexes.filter((indexe) => board[indexe] === '');
                         const selectedIndex =
                             availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
                         board[selectedIndex] = activePlayer.mark;
                         activePlayer = player1;
-                        result.innerText = `${player1.name} move`;
+                        desc.innerText = `${player1.name} move`;
                     }
                     createBoard();
+                }
+            }
+
+            // bestMove
+
+            function bestMove() {
+                let bestScore = -Infinity;
+                let move;
+
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] == '') {
+                        board[i] = 'O';
+                        // eslint-disable-next-line no-param-reassign, prefer-const
+                        let score = minimax(board, 0, false);
+                        board[i] = '';
+                        if (score > bestScore) {
+                            bestScore = score;
+                            move = { i };
+                        }
+                    }
+                }
+                board[move.i] = 'O';
+
+                activePlayer = player1;
+            }
+
+            // Minimax
+
+            // eslint-disable-next-line no-inner-declarations
+            function minimax(board, depth, isMaximizing) {
+                // eslint-disable-next-line prefer-const
+                let result = checkWin();
+                if (result !== false) {
+                    return scores[result];
+                }
+
+                if (isMaximizing) {
+                    let bestScore = -Infinity;
+                    for (let i = 0; i < 9; i += 1) {
+                        // Is the spot available?
+                        if (board[i] == '') {
+                            board[i] = 'O';
+                            // eslint-disable-next-line no-param-reassign, prefer-const
+                            let score = minimax(board, depth + 1, false);
+                            board[i] = '';
+                            bestScore = Math.max(score, bestScore);
+                        }
+                    }
+                    return bestScore;
+                    // eslint-disable-next-line no-else-return
+                }
+                if (!isMaximizing) {
+                    let bestScore = Infinity;
+                    for (let i = 0; i < 9; i += 1) {
+                        // Is the spot available?
+                        if (board[i] === '') {
+                            board[i] = 'X';
+                            // eslint-disable-next-line no-param-reassign, prefer-const
+                            let score = minimax(board, depth + 1, true);
+                            board[i] = '';
+                            bestScore = Math.min(score, bestScore);
+                        }
+                    }
+                    return bestScore;
                 }
             }
             // Game vs hard computer
 
             if (index === '2') {
-                player2 = playerFactory('Computer', 'O');
                 if (e.target.innerText === '') {
                     board[e.path['0'].id] = activePlayer.mark;
-                    result.innerText = `Computer move`;
+                    desc.innerText = `Computer move`;
                     const indexes = Array.from(Array(board.length).keys());
                     const availableIndexes = indexes.filter((indexe) => board[indexe] === '');
                     if (availableIndexes.length > 0) {
                         bestMove();
                     }
-                    result.innerText = `${player1.name} move`;
+                    desc.innerText = `${player1.name} move`;
                     checkWin();
                     createBoard();
                 }
@@ -142,7 +212,7 @@ const gameBoard = (() => {
     function startAgain() {
         for (let i = 0; i < board.length; i += 1) {
             board[i] = '';
-            result.innerText = 'Start the game';
+            desc.innerText = 'Start the game';
         }
         createBoard();
     }
@@ -174,30 +244,3 @@ buttons.addEventListener('click', function (e) {
     }
     gameBoard.startAgain();
 });
-
-function gameType() {}
-
-gameType();
-
-function minimax() {
-    return 1;
-}
-
-function bestMove() {
-    let bestScore = -Infinity;
-    let move;
-    gameBoard.activePlayer = player2;
-    for (let i = 0; i < 9; i++) {
-        if (gameBoard.board[i] === '') {
-            gameBoard.board[i] = gameBoard.activePlayer.mark;
-            const score = minimax(gameBoard.board);
-            gameBoard.board[i] = '';
-            if (score > bestScore) {
-                bestScore = score;
-                move = { i };
-            }
-        }
-    }
-    gameBoard.board[move.i] = 'O';
-    gameBoard.activePlayer = player1;
-}
