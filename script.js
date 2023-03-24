@@ -132,14 +132,13 @@ const gameBoard = (() => {
                         // eslint-disable-next-line no-param-reassign, prefer-const
                         let score = minimax(board, 0, false);
                         board[i] = '';
-                        if (score > bestScore) {
+                        if (score > bestScore || (score === bestScore && Math.random() < 0.5)) {
                             bestScore = score;
                             move = { i };
                         }
                     }
                 }
                 board[move.i] = 'O';
-
                 activePlayer = player1;
             }
 
