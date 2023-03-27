@@ -15,8 +15,8 @@ const player1 = playerFactory('Kozi', 'X');
 let player2 = playerFactory('Opponent', 'O');
 // eslint-disable-next-line no-param-reassign, prefer-const
 let scores = {
-    X: 10,
-    O: -10,
+    X: -10,
+    O: 10,
     tie: 0
 };
 
